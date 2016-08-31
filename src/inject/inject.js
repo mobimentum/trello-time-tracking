@@ -18,6 +18,36 @@ chrome.extension.sendMessage({}, function(response) {
 				// 	$('.card-detail-window .comment-box textarea').html("@h 8:00 Example acvitity log");
 				// });
 			},
+			
+			loadHours:  function(mutationType) {
+				var $detailWindow = $('.card-detail-window');
+				if (mutationType == 'childList' && $detailWindow.size() > 0
+						&& $detailWindow.find('#ttt-actions').size() == 0) {
+						
+					// Add time tracking button
+					$detailWindow.find('.other-actions h3').after(ttt.renderActions());
+					$('#ttt-actions .js-ttt-card').on('click', function() { ttt.toggle(); });
+
+					// Listen for comment updates
+					// TODO: anche modifiche commenti esistenti
+					commentsObserver = new MutationObserver(function(mutations) {
+						mutations.forEach(function(mutation) {
+							if (mutation.type == 'childList') {
+								// Update hours log
+								$('#ttt-actions .js-ttt-card .sum').text(ttt.getHoursSum());
+							}
+						});
+					});
+					commentsObserver.observe(document.querySelector('.js-list-actions'), { 
+						attributes: false, childList: true, characterData: false 
+					});
+				}
+				else if ($detailWindow.size() == 0 && commentsObserver) {
+					// Stop listening for comment updates
+					commentsObserver.disconnect();
+					commentsObserver = null;
+				}
+			},
 
 			toggleState: true,
 
@@ -44,7 +74,6 @@ chrome.extension.sendMessage({}, function(response) {
 			getHoursSum: function() {
 				// Sum (minutes)
 				var sum = 0;
-				console.log($('.window-wrapper .current-comment'), $('.window-wrapper'));
 				$('.window-wrapper .current-comment').each(function() {
 					var $this = $(this);
 					var match = $this.text().match(/@h ([0-9]{1,2}):([0-9]{1,2}) (.*)/);
@@ -70,46 +99,25 @@ chrome.extension.sendMessage({}, function(response) {
 			}
 		};
 
-		$(document).on('ready', function() {
+		// Replaced by 
+//		$(document).on('ready', function() {
 			ttt.init();
-		});
+//		});
 
 		var commentsObserver = null;
 		var cardDetailsObserver = new MutationObserver(function(mutations) {
 			mutations.forEach(function(mutation) {
-				var $detailWindow = $('.card-detail-window');
-				if (mutation.type == 'childList' && $detailWindow.size() > 0
-						&& $detailWindow.find('#ttt-actions').size() == 0) {
-						
-					// Add time tracking button
-					$detailWindow.find('.other-actions h3').after(ttt.renderActions());
-					$('#ttt-actions .js-ttt-card').on('click', function() { ttt.toggle(); });
-
-					// Listen for comment updates
-					// TODO: anche modifiche commenti esistenti
-					commentsObserver = new MutationObserver(function(mutations) {
-						mutations.forEach(function(mutation) {
-							if (mutation.type == 'childList') {
-								// Update hours log
-								$('#ttt-actions .js-ttt-card .sum').text(ttt.getHoursSum());
-							}
-						});
-					});
-					commentsObserver.observe(document.querySelector('.js-list-actions'), { 
-						attributes: false, childList: true, characterData: false 
-					});
-				}
-				else if ($detailWindow.size() == 0 && commentsObserver) {
-					// Stop listening for comment updates
-					commentsObserver.disconnect();
-					commentsObserver = null;
-				}
+				ttt.loadHours(mutation.type);
 			});
 		});
 		cardDetailsObserver.observe(document.querySelector('.window-wrapper'), { 
 			attributes: false, childList: true, characterData: false 
 		});
 		// cardDetailsObserver.disconnect();
+		
+		if (window.location.pathname.split(/\//)[1] /*b=board, c=card*/ == 'c') {
+			ttt.loadHours('childList');
+		}
 	}
 	}, 10);
 });

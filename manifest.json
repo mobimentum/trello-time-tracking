@@ -1,6 +1,6 @@
 {
   "name": "Trello TimeTracking",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "manifest_version": 2,
   "description": "Small extension to log hours on a Trello card",
   "homepage_url": "http://mobimentum.it",
@@ -20,16 +20,12 @@
       ],
       "css": [
         "src/inject/inject.css"
-      ]
-    },
-    {
-      "matches": [
-        "https://trello.com/*"
       ],
       "js": [
         "js/jquery/jquery.min.js",
         "src/inject/inject.js"
-      ]
+      ],
+      "run_at": "document_end"
     }
   ]
 }
