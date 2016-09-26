@@ -8,7 +8,7 @@ chrome.extension.sendMessage({}, function(response) {
 		// console.log("Hello. This message was sent from scripts/inject.js");
 		// ----------------------------------------------------------
 
-		// TODO: controlla se sono in una board
+		// TODO: check if we're on a board
 
 		var ttt = {
 
@@ -29,7 +29,7 @@ chrome.extension.sendMessage({}, function(response) {
 					$('#ttt-actions .js-ttt-card').on('click', function() { ttt.toggle(); });
 
 					// Listen for comment updates
-					// TODO: anche modifiche commenti esistenti
+					// TODO: also listen for new comments
 					commentsObserver = new MutationObserver(function(mutations) {
 						mutations.forEach(function(mutation) {
 							if (mutation.type == 'childList') {
